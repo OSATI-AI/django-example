@@ -8,7 +8,15 @@ from jinja2 import Template
 LANGAUGE = "english"
 
 def index(request):
-    return render(request, 'app/index.html')
+    tasks_dir = os.path.join(os.path.dirname(__file__), 'data/math')
+    tasks = []
+    for task_file in os.listdir(tasks_dir):
+        if task_file.endswith('.yaml'):
+            with open(os.path.join(tasks_dir, task_file), 'r') as file:
+                task = yaml.safe_load(file)
+                tasks.append((task['title'][LANGAUGE], task_file))
+
+    return render(request, 'app/index.html', {'tasks': tasks})
 
 def fill_text(yaml_file, language):
     # Convert YAML data to a string
@@ -29,24 +37,50 @@ def fill_text(yaml_file, language):
 
 @csrf_exempt
 def load_task(request):
-    template = open(os.path.join(os.path.dirname(__file__), 'data/01_simple_question_answer.yaml'), "r").read()
-    template = yaml.safe_load(template)
-    template_header = template["pyscript"]["imports"] 
-    tempalte_generator = template["pyscript"]["generator"]
+    tasks_dir = os.path.join(os.path.dirname(__file__), 'data/math')
+    template_dir = os.path.join(os.path.dirname(__file__), 'data/templates')
 
-    task = open(os.path.join(os.path.dirname(__file__), 'data/task.yaml'), "r").read()
+    if request.method == 'POST':
+        task_name = request.POST.get('task_name', '')
+        
+    task_file = os.path.join(tasks_dir, task_name)
+
+    task = open(task_file, "r").read()
     task = yaml.safe_load(task)
     task = fill_text(task, language=LANGAUGE)
-    task_header = task["pyscript"]["imports"] 
-    task_generator = task["pyscript"]["generator"]
+    template_name = task["template"]+".yaml"
+    template = open(os.path.join(template_dir, template_name), "r").read()
+    template = yaml.safe_load(template)
 
+    template_header = template["pyscript"]["imports"] 
+    tempalte_generator = template["pyscript"]["generator"]
+    task_header = task["pyscript"]["imports"] 
+    task_globals = task["pyscript"]["globals"]
+    task_checker = task["pyscript"]["checker"]
+    task_generator = task["pyscript"]["generator"]
+    
     response_html = f"""
     <py-script>
         {template_header}
         {tempalte_generator}
         {task_header}
+        {task_globals}
+        {task_checker}
         {task_generator}
-        generate("task-container")
+
+        def check(event):
+            result = check_answer(event)
+            flag = result[0]
+            if flag:
+                pydom['#result'][0].html = "Correct!" 
+                generate('task-container')
+            else:
+                pydom['#result'][0].html = "Almost! Try again!"
+
+        def refresh(event):
+            generate('task-container')
+        
+        generate('task-container')
     </py-script>
     """
     print(response_html)
