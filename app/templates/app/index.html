@@ -1,0 +1,19 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index Page</title>
+    <script src="https://unpkg.com/htmx.org@1.6.1"></script>
+    <script defer src="//unpkg.com/mathlive"></script>
+    <link rel="stylesheet" href="https://pyscript.net/snapshots/2023.09.1.RC2/core.css">
+    <script type="module" src="https://pyscript.net/snapshots/2023.09.1.RC2/core.js"></script>
+</head>
+<body>
+    <h1>Welcome to the Index Page</h1>
+    <button hx-post="{% url 'app:load_task' %}" hx-target="#script_content">Load Task</button>
+    <div id="task-container"></div>
+    <div id ="script_content"></div>
+</body>
+</html>
