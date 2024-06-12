@@ -1,0 +1,60 @@
+title:
+  german: Fehlende Zahl 
+  english: Missing Number
+description: Fill in the missing number in a sequence 
+template: 01_simple_question_answer
+text:
+  text_question:
+    german: 'Fülle die Lücke mit der richtigen Zahl.'
+    english: 'Fill in the gap with the correct number.'
+pyscript:
+  imports: |
+    import random
+    from pyscript import document
+    from pyweb import pydom
+    from js import document
+  globals: |
+    answer = 0
+  checker: |
+    def check_answer(event):
+      # Access the math-field element
+      math_field = document.getElementById("answer_field")
+      user_answer = math_field.getPromptValue('answer')
+      print("Answer: ", answer)
+      print("User answer: ", user_answer)
+      if user_answer.isnumeric():
+          user_answer = int(user_answer)
+          is_correct = True if user_answer == answer else False
+      else:
+          is_correct = False
+
+      return [is_correct, answer, user_answer]
+  generator: |
+    def generate(parent):
+      global answer
+
+      start = random.randint(1, 90)
+      missing_idx = random.randint(1, 9)
+
+      seq_string = ""
+      for i in range(10):
+        number = start+i
+        if i == missing_idx:
+          answer = start+i
+
+          seq_string += "\\placeholder[answer]{}"
+        else:
+          seq_string += str(number)
+        if i <9:
+          seq_string += ","
+
+      question_element, answer_element = generate_template(parent)
+      question_element.innerText="{{ text.text_question }}"
+      answer_field = document.createElement("math-field")
+      answer_field.id = "answer_field"
+      answer_field.className = 'w-128'
+      answer_field.setValue(seq_string)
+      answer_field.mathVirtualKeyboardPolicy = "manual"
+      answer_field.readonly = True
+      answer_element.append(answer_field)
+      

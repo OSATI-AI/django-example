@@ -1,0 +1,62 @@
+title:
+  german: Schätze
+  english: Estimate
+description: Estimate the solution
+template: 03_multiple_choice_question
+text: 
+  text_question:
+    german: 'Schätze.'
+    english: 'Estimate.'
+pyscript:
+  imports: |
+    import random
+    from pyscript import document
+    from pyweb import pydom
+    import js
+  globals: |
+    answer = 0
+    selected = 0
+    NUM_CHOICES = 4
+  checker: |
+    def check_answer(event):
+      print("SELECTED: ", selected)
+      print("CORRECT: ", answer) 
+      is_correct = answer==selected
+      return [is_correct, answer, selected]
+
+  generator: |
+    def onclick_gen(idx, choices_elements):
+      def onclick(e):
+        global selected 
+        selected = idx
+        for c in choices_elements:
+          c.className = "choice"
+        choices_elements[idx].className = "choice choice_selected"
+      return onclick
+
+
+    def generate(parent):
+      global answer
+      answer = 0
+
+      num1 = round(random.uniform(1, 99), 2)
+      num2 = round(random.uniform(1, 99), 2)
+
+      correct = round(num1)+round(num2)
+      choices = [correct]
+      for i in range(NUM_CHOICES-1):
+        delta = 0
+        while delta == 0 or correct+delta in choices:
+          delta = random.randint(-10,10)
+        choices.append(correct+delta)
+
+      choices.sort()
+      answer = choices.index(correct)
+      question_element, choices_container, choices_elements = generate_template(parent, NUM_CHOICES)
+      question_element.innerText = "{{ text.text_question }}  " + f"{num1} + {num2} = "
+      for i,c_element in enumerate(choices_elements):
+        c_element.innerText = choices[i]
+        c_element.onclick = onclick_gen(i,choices_elements)
+        
+      
+

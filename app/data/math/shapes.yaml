@@ -1,0 +1,108 @@
+title:
+  german: Formen bestimmen
+  english: Name shapes
+description: Find the correct shape
+template: 03_multiple_choice_question
+text: 
+  text_question:
+    german: 'Selche Form ist '
+    english: 'Which form is'
+  text_triangle:
+    german: 'ein Dreieck'
+    english: "a triangle"
+  text_rectangle:
+    german: 'ein Rechteck'
+    english: "a rectangle"
+  text_quadrangle:
+    german: 'ein Viereck'
+    english: "a quadrangle"
+  text_pentagon:
+    german: 'ein Fünfeck'
+    english: "a pentagon"
+  text_circle:
+    german: 'einem Kreis'
+    english: "a circle"
+  text_ellipse:
+    german: 'eine Ellipse'
+    english: "an ellipse"
+
+pyscript:
+  imports: |
+    import random
+    from pyscript import document
+    from pyweb import pydom
+    import js
+  globals: |
+    answer = 0
+    selected = 0
+    NUM_CHOICES = 3
+
+    shapes = {
+      "triangle":{
+        "function":js.drawTriangle,
+        "name":"{{ text.text_triangle }}"
+      },
+      "rectangle":{
+        "function":js.drawRectangle,
+        "name":"{{ text.text_rectangle }}"
+      },
+      "quadrangle":{
+        "function":js.drawQuadrangle,
+        "name":"{{ text.text_quadrangle }}"
+      },
+      "pentagon":{
+        "function":js.drawPentagon,
+        "name":"{{ text.text_pentagon }}"
+      },
+      "ellipse":{
+        "function":js.drawEllipse,
+        "name":"{{ text.text_ellipse }}"
+      }
+    }
+
+
+  checker: |
+    def check_answer(event):
+      print("SELECTED: ", selected)
+      print("CORRECT: ", answer) 
+      is_correct = answer==selected
+      return [is_correct, answer, selected]
+
+  generator: |
+    def onclick_gen(idx, choices_elements):
+      def onclick(e):
+        global selected 
+        selected = idx
+        for c in choices_elements:
+          c.className = "choice"
+        choices_elements[idx].className = "choice choice_selected"
+      return onclick
+
+
+
+    def generate(parent):
+      global answer
+      answer = 0
+
+     
+      correct_shape = random.choice(list(shapes.keys()))
+      shape_choices=[correct_shape]
+      for i in range(NUM_CHOICES-1):
+        shape = correct_shape
+        while shape in shape_choices:
+          shape = random.choice(list(shapes.keys()))
+        shape_choices.append(shape)
+
+      shape_choices.sort()
+      answer = shape_choices.index(correct_shape)
+
+      question_element, choices_container, choices_elements = generate_template(parent, NUM_CHOICES)
+      question_element.innerText = "{{ text.text_question }} "+shapes[correct_shape]["name"]+"?"
+      
+      for i,c_element in enumerate(choices_elements):
+        c_element.id = "choice_"+str(i)
+        c_element.onclick = onclick_gen(i,choices_elements)
+        shapes[shape_choices[i]]["function"]("choice_"+str(i), 100)
+        
+      
+

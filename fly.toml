@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for task-generator-django on 2024-06-11T10:11:47+02:00
+# fly.toml app configuration file generated for task-generator-django on 2024-06-12T09:08:05+02:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -8,6 +8,9 @@ primary_region = 'ams'
 console_command = '/code/manage.py shell'
 
 [build]
+
+[deploy]
+  release_command = 'python manage.py migrate --noinput'
 
 [env]
   PORT = '8000'
