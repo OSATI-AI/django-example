@@ -1,7 +1,8 @@
 title:
   german: Steigung ablesen
   english: Read gradient
-description: Read the gradient of the function from the graph
+description: The student sees the graph of a linear function and should read off the gradient of the displayed function.
+example: The graph shows the function y=4x. The correct answer is 4. 
 template: 02_figure_question_answer
 text:
   text_question:

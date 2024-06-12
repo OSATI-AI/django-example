@@ -7,15 +7,20 @@ from jinja2 import Template
 
 LANGAUGE = "english"
 
-def index(request):
-    tasks_dir = os.path.join(os.path.dirname(__file__), 'data/math')
+def load_tasks(tasks_dir):
     tasks = []
+    # Load all tasks in the given directory and create list of tuples (title, filename)
     for task_file in os.listdir(tasks_dir):
         if task_file.endswith('.yaml'):
             with open(os.path.join(tasks_dir, task_file), 'r') as file:
                 task = yaml.safe_load(file)
                 tasks.append((task['title'][LANGAUGE], task_file))
 
+def index(request):
+    # Load all tasks in the given directory
+    tasks_dir = os.path.join(os.path.dirname(__file__), 'data/math')
+    tasks = load_task(tasks_dir)
+    # render index.html and display the tasks in the sidebar
     return render(request, 'app/index.html', {'tasks': tasks})
 
 def fill_text(yaml_file, language):
@@ -42,9 +47,11 @@ def load_task(request):
 
     if request.method == 'POST':
         task_name = request.POST.get('task_name', '')
-        
+    
+    # load yaml file by task name
     task_file = os.path.join(tasks_dir, task_name)
 
+    # parse task and load according template 
     task = open(task_file, "r").read()
     task = yaml.safe_load(task)
     task = fill_text(task, language=LANGAUGE)
@@ -52,6 +59,7 @@ def load_task(request):
     template = open(os.path.join(template_dir, template_name), "r").read()
     template = yaml.safe_load(template)
 
+    # read pyscript fileds from task and template
     template_header = template["pyscript"]["imports"] 
     tempalte_generator = template["pyscript"]["generator"]
     task_header = task["pyscript"]["imports"] 
@@ -59,6 +67,7 @@ def load_task(request):
     task_checker = task["pyscript"]["checker"]
     task_generator = task["pyscript"]["generator"]
     
+    # build pyscript tag that handles the task layout and logic
     response_html = f"""
     <py-script>
         {template_header}
@@ -83,5 +92,5 @@ def load_task(request):
         generate('task-container')
     </py-script>
     """
-    print(response_html)
+    
     return HttpResponse(response_html)

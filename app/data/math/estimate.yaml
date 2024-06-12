@@ -1,7 +1,9 @@
 title:
   german: Schätze
   english: Estimate
-description: Estimate the solution
+description: The student has to estimate the solution of an addition problem with two floating point numbers. The student should first round both numbers to get rid of the decimal digits and then add the rounded numbers together. The exercise is a multiple choice exercise where only one choice is the correct answer.
+example: "Question: Estimate the result of 42.13 + 19.78. Choices: 58, 62, 67, 85. Correct Choice: 62"
+topic_
 template: 03_multiple_choice_question
 text: 
   text_question:
@@ -33,7 +35,6 @@ pyscript:
           c.className = "choice"
         choices_elements[idx].className = "choice choice_selected"
       return onclick
-
 
     def generate(parent):
       global answer
