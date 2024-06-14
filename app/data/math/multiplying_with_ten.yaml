@@ -1,49 +1,38 @@
-title:
-  german: Mit Zehnern multiplizieren
-  english: Multiplying by tens
-description: Multiplying by multiples of ten
+description: The student sees a multiplication exercise where both numbers are multiples
+  of 10. The student have to finde the solution of the multiplication.
+example: 'Exercise: 60*70 Correct Answer: 4200'
+pyscript:
+  checker: "def check_answer(event):\n  # Access the math-field element\n  math_field\
+    \ = document.getElementById(\"equation\")\n  user_answer = math_field.getPromptValue('answer')\n\
+    \n  if user_answer.isnumeric():\n      user_answer = int(user_answer)\n      is_correct\
+    \ = True if user_answer == answer else False\n  else:\n      is_correct = False\n\
+    \n  return [is_correct, answer, user_answer]\n"
+  generator: "def generate(parent):\n  global answer\n\n  n1 = random.randint(1, 9)\
+    \ * 10\n  n2 = random.randint(1, 9) * 10\n\n  answer = n1 * n2\n  equation = str(n1)\
+    \ + \"\\\\cdot\" +str(n2) +\" = \\\\placeholder[answer]{}\"\n\n  question_element,\
+    \ answer_element = generate_template(parent)\n  question_element.innerText=\"\
+    {{ text.text_question }}\"\n  answer_field = document.createElement(\"math-field\"\
+    )\n  answer_field.id = \"equation\"\n  answer_field.className = 'w-48'\n  answer_field.setValue(equation)\n\
+    \  answer_field.mathVirtualKeyboardPolicy = \"manual\"\n  answer_field.readonly\
+    \ = True\n  answer_element.append(answer_field)\n"
+  globals: 'answer = 0
+
+    '
+  imports: 'import random
+
+    from pyscript import document
+
+    from pyweb import pydom
+
+    from js import document
+
+    '
 template: 01_simple_question_answer
 text:
   text_question:
-    german: 'Multipliziere.'
-    english: 'Multiply.'
-pyscript:
-  imports: |
-    import random
-    from pyscript import document
-    from pyweb import pydom
-    from js import document
-  globals: |
-    answer = 0
-  checker: |
-    def check_answer(event):
-      # Access the math-field element
-      math_field = document.getElementById("equation")
-      user_answer = math_field.getPromptValue('answer')
-    
-      if user_answer.isnumeric():
-          user_answer = int(user_answer)
-          is_correct = True if user_answer == answer else False
-      else:
-          is_correct = False
-
-      return [is_correct, answer, user_answer]
-  generator: |
-    def generate(parent):
-      global answer
-
-      n1 = random.randint(1, 9) * 10
-      n2 = random.randint(1, 9) * 10
-
-      answer = n1 * n2
-      equation = str(n1) + "\\cdot" +str(n2) +" = \\placeholder[answer]{}"
-
-      question_element, answer_element = generate_template(parent)
-      question_element.innerText="{{ text.text_question }}"
-      answer_field = document.createElement("math-field")
-      answer_field.id = "equation"
-      answer_field.className = 'w-48'
-      answer_field.setValue(equation)
-      answer_field.mathVirtualKeyboardPolicy = "manual"
-      answer_field.readonly = True
-      answer_element.append(answer_field)
+    english: Multiply.
+    german: Multipliziere.
+title:
+  english: Multiplying by tens
+  german: Mit Zehnern multiplizieren
+topic_id: 17

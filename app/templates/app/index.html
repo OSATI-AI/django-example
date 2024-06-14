@@ -10,91 +10,33 @@
     <link rel="stylesheet" href="https://pyscript.net/snapshots/2023.09.1.RC2/core.css">
     <script type="module" src="https://pyscript.net/snapshots/2023.09.1.RC2/core.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <!--TODO: Find a way to dynamically load the js scripts just for the tasks that need them-->
     <script type='text/javascript' src="{% static 'app/scripts/figure.js' %}"></script>
+    <script type='text/javascript' src="{% static 'app/scripts/shapes.js' %}"></script>
+    <script type='text/javascript' src="{% static 'app/scripts/missing_number_grid.js' %}"></script>
 
-    <style>
-        body {
-            display: flex;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-        .sidebar {
-            width: 200px;
-            background-color: #2c3e50;
-            padding: 10px;
-            border-right: 1px solid #ccc;
-            box-sizing: border-box;
-        }
-        .sidebar-item {
-            cursor: pointer;
-            padding: 10px;
-            border: none;
-            text-align: left;
-            width: 100%;
-            background-color: #34495e;
-            color: #ecf0f1;
-            margin-bottom: 5px;
-            font-size: 16px;
-            border-radius: 4px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .sidebar-item:hover {
-            background-color: #1abc9c;
-            color: #ffffff;
-        }
-        .content {
-            flex-grow: 1;
-            padding: 20px;
-            box-sizing: border-box;
-            background-color: #ecf0f1;
-        }
-        .button-container {
-            margin-top: 20px;
-        }
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            background-color: #3498db;
-            color: #ffffff;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
+    <!--Style for the Page layout (sidebar etc..)-->
+    <link rel="stylesheet" href="{% static 'app/css/layout.css' %}">
+    <!--Task related styling-->
+    <link rel="stylesheet" href="{% static 'app/css/tasks.css' %}">
 
-        .layout_button{
-            margin-top:20px; 
-        }
+    <script>
+function toggleVisibility(element) {
+    var nextElement = element.nextElementSibling;
+    var arrow = element.querySelector('.arrow');
 
-        .choice-container {
-            list-style-type: none;
-            padding: 0;
-        }
-        
-        .choice {
-            background-color: white;
-            border: 1px solid grey;
-            border-radius: 8px;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-            padding: 10px 20px;
-            margin: 10px 0;
-            transition: background-color 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .choice:hover {
-            background-color: #d4edda;
-        }
-                     
-        .choice_selected{
-            background-color: #d4edda;      
-        }
+    if (nextElement.style.display === "none") {
+        nextElement.style.display = "block";
+        element.classList.add('expanded');
+        element.classList.remove('collapsed');
+    } else {
+        nextElement.style.display = "none";
+        element.classList.remove('expanded');
+        element.classList.add('collapsed');
+    }
+}
+</script>
 
-    </style>
 </head>
 <body>
     <!--Empty pyscript tag. Otherwise py-click at button listeners would trow an error-->
@@ -104,8 +46,41 @@
     <div class="sidebar">
         <h3>Sidebar</h3>
         <!-- Sidebar items will be added here by the Django view -->
-        {% for title, filename in tasks %}
-        <button class="sidebar-item" hx-post="{% url 'app:load_task' %}" hx-target="#script_content" hx-trigger="click" hx-vals='{"task_name":"{{filename}}"}' hx-include="csrf-token">{{title}}</button>
+        {% for level, key_ideas in structured_tasks.items %}
+            <div class="level">
+                <h4 class="expandable" onclick="toggleVisibility(this)">
+                    <span class="arrow">▶</span> {{ level }}
+                </h4>
+                <div class="key-ideas" style="display: none;">
+                    {% for key_idea, topics in key_ideas.items %}
+                        <div class="key-idea">
+                            <h5 class="expandable" onclick="toggleVisibility(this)">
+                                <span class="arrow">▶</span> {{ key_idea }}
+                            </h5>
+                            <div class="topics" style="display: none;">
+                                {% for topic, tasks in topics.items %}
+                                    <div class="topic">
+                                        <h6 class="expandable" onclick="toggleVisibility(this)">
+                                            <span class="arrow">▶</span> {{ topic }}
+                                        </h6>
+                                        <div class="tasks" style="display: none;">
+                                            {% for title, filename in tasks %}
+                                                <button class="sidebar-item"
+                                                    hx-post="{% url 'app:load_task' %}"
+                                                    hx-target="#script_content"
+                                                    hx-trigger="click"
+                                                    hx-vals='{"task_name":"{{filename}}"}'
+                                                    hx-include="csrf-token"
+                                                >{{ title }}</button>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         {% endfor %}
     </div>
     <div class="content">
