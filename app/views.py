@@ -85,9 +85,11 @@ def load_task(request):
 
     if request.method == 'POST':
         task_name = request.POST.get('task_name', '')
-        
+    
+    # load yaml file by task name
     task_file = os.path.join(tasks_dir, task_name)
 
+    # parse task and load according template 
     task = open(task_file, "r").read()
     task = yaml.safe_load(task)
     task = fill_text(task, language=LANGUAGE)
@@ -95,6 +97,7 @@ def load_task(request):
     template = open(os.path.join(template_dir, template_name), "r").read()
     template = yaml.safe_load(template)
 
+    # read pyscript fileds from task and template
     template_header = template["pyscript"]["imports"] 
     tempalte_generator = template["pyscript"]["generator"]
     task_header = task["pyscript"]["imports"] 
@@ -102,6 +105,7 @@ def load_task(request):
     task_checker = task["pyscript"]["checker"]
     task_generator = task["pyscript"]["generator"]
     
+    # build pyscript tag that handles the task layout and logic
     response_html = f"""
     <py-script>
         {template_header}
@@ -126,5 +130,5 @@ def load_task(request):
         generate('task-container')
     </py-script>
     """
-    print(response_html)
+    
     return HttpResponse(response_html)
