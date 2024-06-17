@@ -1,38 +1,62 @@
+title:
+  german: Natürliche Zahlen runden
+  english: Rounding natural numbers
 description: The student sees a number between 100 and 9999 and have to round it to
   the nearest hundred
 example: 'Number: 6537 Correct Answer: 6500'
-pyscript:
-  checker: "def check_answer(event):\n  user_answer = document.getElementById('answerField').value\n\
-    \  if user_answer.isnumeric():\n      user_answer = int(user_answer)\n      is_correct\
-    \ = True if user_answer == answer else False\n  else:\n      is_correct = False\n\
-    \n  return [is_correct, answer, user_answer]\n"
-  generator: "def generate_number():\n  number = 0\n  while number % 100 == 0:\n \
-    \   number = random.randint(100, 9999)\n  return number\n  \ndef generate(parent):\n\
-    \  global answer\n\n  number = generate_number()\n  rounded_number = round(number,\
-    \ -2)\n  answer = rounded_number\n\n  print(number)\n\n  question_element, answer_element\
-    \ = generate_template(parent)\n  question_span = document.createElement(\"span\"\
-    )\n  mf = document.createElement(\"math-field\")\n  mf.readonly = True\n  mf.innerHTML\
-    \ = f\"{number}\"\n  question_label = document.createElement(\"p\")\n  question_label.innerHTML\
-    \ = \"{{ text.text_question }}\"\n  question_span.append(question_label)\n  question_span.append(mf)\n\
-    \  question_element.append(question_span)\n\n  answer_field = document.createElement(\"\
-    input\")\n  answer_field.className = 'input input-bordered w-full max-w-xs'\n\
-    \  answer_field.id = 'answerField'\n  answer_element.append(answer_field)\n"
-  globals: 'answer = 0
-
-    '
-  imports: 'import random
-
-    from pyscript import document
-
-    from pyweb import pydom
-
-    '
+topic_id: 18
 template: 01_simple_question_answer
 text:
   text_question:
-    english: Round to the nearest hundred.
-    german: Runde auf Hunderter.
-title:
-  english: Rounding natural numbers
-  german: Natürliche Zahlen runden
-topic_id: 18
+    german: 'Runde auf Hunderter.'
+    english: 'Round to the nearest hundred.'
+pyscript:
+  imports: |
+    import random
+    from pyscript import document
+    from pyweb import pydom
+  globals: |
+    answer = 0
+  checker: |
+    def check_answer(event):
+      user_answer = document.getElementById('answerField').value
+      if user_answer.isnumeric():
+          user_answer = int(user_answer)
+          is_correct = True if user_answer == answer else False
+      else:
+          is_correct = False
+
+      return [is_correct, answer, user_answer]
+  generator: |
+    def generate_number():
+      number = 0
+      while number % 100 == 0:
+        number = random.randint(100, 9999)
+      return number
+      
+    def generate(parent):
+      global answer, number
+
+      number = generate_number()
+      rounded_number = round(number, -2)
+      answer = rounded_number
+
+      question_element, answer_element = generate_template(parent)
+      question_span = document.createElement("span")
+      mf = document.createElement("math-field")
+      mf.readonly = True
+      question_label = document.createElement("p")
+      mf.innerHTML = f"{number}"
+      question_span.append(question_label)
+      question_label.innerHTML = "{{ text.text_question }}"
+      question_span.append(mf)
+      question_element.append(question_span)
+
+      answer_field = document.createElement("input")
+      answer_field.className = 'input input-bordered w-full max-w-xs'
+      answer_field.id = 'answerField'
+      answer_element.append(answer_field)
+
+  details: | 
+    def get_details():
+      return f"The number that should be rounded is {number}. Therefore the correct answer is {answer}"

@@ -14,28 +14,43 @@
     <script type='text/javascript' src="{% static 'app/scripts/figure.js' %}"></script>
     <script type='text/javascript' src="{% static 'app/scripts/shapes.js' %}"></script>
     <script type='text/javascript' src="{% static 'app/scripts/missing_number_grid.js' %}"></script>
-
+    
     <!--Style for the Page layout (sidebar etc..)-->
     <link rel="stylesheet" href="{% static 'app/css/layout.css' %}">
     <!--Task related styling-->
     <link rel="stylesheet" href="{% static 'app/css/tasks.css' %}">
 
     <script>
-function toggleVisibility(element) {
-    var nextElement = element.nextElementSibling;
-    var arrow = element.querySelector('.arrow');
+        function toggleVisibility(element) {
+            var nextElement = element.nextElementSibling;
+            var arrow = element.querySelector('.arrow');
 
-    if (nextElement.style.display === "none") {
-        nextElement.style.display = "block";
-        element.classList.add('expanded');
-        element.classList.remove('collapsed');
-    } else {
-        nextElement.style.display = "none";
-        element.classList.remove('expanded');
-        element.classList.add('collapsed');
-    }
-}
-</script>
+            if (nextElement.style.display === "none") {
+                nextElement.style.display = "block";
+                element.classList.add('expanded');
+                element.classList.remove('collapsed');
+            } else {
+                nextElement.style.display = "none";
+                element.classList.remove('expanded');
+                element.classList.add('collapsed');
+            }
+        }
+
+        function sendTaskDetails(text) {
+            document.getElementById("details").innerText="Task details for tutor: "+text
+            fetch('/task_details', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: text })
+            })
+            .then(response => response.json())
+            .then(data => console.log(data));
+        }
+    </script>
+
+
 
 </head>
 <body>
@@ -87,13 +102,14 @@ function toggleVisibility(element) {
 
     <div class="content">
         <h3>Content</h3>
+        <div>
         <div id="task-container"></div>
         <div id ="script_content"></div>
         <div id = "result"></div>
+        <div id = "details" style="margin-top: 10px; margin-bottom: 10px;"></div>
         <button class = "layout_button" py-click="check">Check</button>
         <button class = "layout_button" py-click="refresh">Refresh</button>
     </div>
-
 
 </body>
 </html>

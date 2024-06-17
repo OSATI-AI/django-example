@@ -4,9 +4,11 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from jinja2 import Template
+from django.http import JsonResponse
+import json
 
 LANGUAGE = "english"
-from collections import defaultdict
+
 
 def load_tasks(tasks_dir):
     tasks = []
@@ -104,16 +106,19 @@ def load_task(request):
     task_globals = task["pyscript"]["globals"]
     task_checker = task["pyscript"]["checker"]
     task_generator = task["pyscript"]["generator"]
+    task_details = task["pyscript"]["details"]
     
     # build pyscript tag that handles the task layout and logic
     response_html = f"""
     <py-script>
+        import js
         {template_header}
         {tempalte_generator}
         {task_header}
         {task_globals}
         {task_checker}
         {task_generator}
+        {task_details}
 
         def check(event):
             result = check_answer(event)
@@ -126,9 +131,29 @@ def load_task(request):
 
         def refresh(event):
             generate('task-container')
-        
+
         generate('task-container')
+        details = get_details()
+        js.sendTaskDetails(details)
     </py-script>
     """
     
     return HttpResponse(response_html)
+
+@csrf_exempt
+def task_details(request):
+
+    print("\n\nREQUEST: ")
+    print(request)
+
+    if request.method == 'POST':
+        try:
+            body = json.loads(request.body)
+            text = body.get('text', '')
+            print(f"Received text: {text}")
+            response_data = {'status': 'success', 'message': 'Data received'}
+        except json.JSONDecodeError:
+            response_data = {'status': 'error', 'message': 'Invalid JSON'}
+        return JsonResponse(response_data)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)

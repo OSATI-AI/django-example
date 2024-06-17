@@ -5,4 +5,5 @@ app_name = "app"
 urlpatterns = [
     path("", views.index, name="index"),
     path('load-task/', views.load_task, name='load_task'),
+    path('task_details', views.task_details, name='task_details'),
 ]
