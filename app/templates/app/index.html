@@ -52,6 +52,54 @@
 
 
 
+
+
+
+
+
+
+
+
+<style>
+    #chat-container {
+        width: 80%;
+        margin: 0 auto;
+    }
+    #chat-history {
+        border: 1px solid #ccc;
+        height: 400px;
+        overflow-y: scroll;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+    .chat-message {
+        padding: 5px;
+        margin: 5px 0;
+    }
+    .user-message {
+        text-align: right;
+        background-color: #dcf8c6;
+    }
+    .bot-response {
+        text-align: left;
+        background-color: #ececec;
+    }
+    #chat-input {
+        width: calc(100% - 60px);
+    }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
 </head>
 <body>
     <!--Empty pyscript tag. Otherwise py-click at button listeners would trow an error-->
@@ -85,6 +133,7 @@
                                                     hx-target="#script_content"
                                                     hx-trigger="click"
                                                     hx-vals='{"task_name":"{{filename}}"}'
+                                                    hx-swap="innerHTML"
                                                     hx-include="csrf-token"
                                                 >{{ title }}</button>
                                             {% endfor %}
@@ -99,17 +148,92 @@
         {% endfor %}
     </div>
 
-
     <div class="content">
         <h3>Content</h3>
         <div>
         <div id="task-container"></div>
         <div id ="script_content"></div>
         <div id = "result"></div>
-        <div id = "details" style="margin-top: 10px; margin-bottom: 10px;"></div>
+        <div id = "details" style="margin-top: 10px; margin-bottom: 10px; visibility: hidden;"></div>
         <button class = "layout_button" py-click="check">Check</button>
         <button class = "layout_button" py-click="refresh">Refresh</button>
+        </div>
     </div>
+
+    <div class="chat-container">
+        <div id="chat-history"></div>
+        <div id="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Type your message here...">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+
+    <script>
+        document.getElementById('send-button').addEventListener('click', function() {
+            const message = document.getElementById('chat-input').value;
+            if (message.trim() === '') return;
+
+            const chatHistory = document.getElementById('chat-history');
+
+            // Add user message to chat history
+            const userMessage = document.createElement('div');
+            userMessage.className = 'chat-message user-message';
+            userMessage.innerText = message;
+            chatHistory.appendChild(userMessage);
+
+            // Add spinner
+            const spinner = document.createElement('div');
+            spinner.className = 'spinner';
+            chatHistory.appendChild(spinner);
+
+            // Send the message to the backend via AJAX
+            fetch('/send_message/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove spinner
+                if (spinner.parentNode) {
+                    spinner.parentNode.removeChild(spinner);
+                }
+
+                // Add bot response to chat history
+                const botResponse = document.createElement('div');
+                botResponse.className = 'chat-message bot-response';
+                botResponse.innerText = data.response;
+                chatHistory.appendChild(botResponse);
+
+                // Scroll to the bottom of chat history
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            });
+
+            // Clear the input field
+            document.getElementById('chat-input').value = '';
+        });
+
+        // Function to get CSRF token for AJAX POST requests
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
 
 </body>
 </html>

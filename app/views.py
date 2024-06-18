@@ -6,8 +6,11 @@ from django.http import HttpResponse
 from jinja2 import Template
 from django.http import JsonResponse
 import json
+from .conversation_manager import conversation_manager
+from django.http import JsonResponse
+import asyncio
 
-LANGUAGE = "english"
+LANGUAGE = "german"
 
 
 def load_tasks(tasks_dir):
@@ -107,7 +110,9 @@ def load_task(request):
     task_checker = task["pyscript"]["checker"]
     task_generator = task["pyscript"]["generator"]
     task_details = task["pyscript"]["details"]
-    
+    task_description = task["description"]
+    task_example = task["example"]
+
     # build pyscript tag that handles the task layout and logic
     response_html = f"""
     <py-script>
@@ -126,15 +131,22 @@ def load_task(request):
             if flag:
                 pydom['#result'][0].html = "Correct!" 
                 generate('task-container')
+                send_context()
             else:
                 pydom['#result'][0].html = "Almost! Try again!"
 
         def refresh(event):
             generate('task-container')
+            send_context()
+            
+        def send_context():
+            details = get_details()
+            context = "The student is currently working on the following Exercise: DESCRIPTION:"+"{task_description}"+" EXAMPLE:"+"{task_example}"+" CURRENT EXERCISE:"+details
+            js.sendTaskDetails(context)
 
         generate('task-container')
-        details = get_details()
-        js.sendTaskDetails(details)
+        send_context()
+        
     </py-script>
     """
     
@@ -149,11 +161,21 @@ def task_details(request):
     if request.method == 'POST':
         try:
             body = json.loads(request.body)
-            text = body.get('text', '')
-            print(f"Received text: {text}")
+            context = body.get('text', '')
+            conversation_manager.set_context(context)
+            print(f"Received text: {context}")
             response_data = {'status': 'success', 'message': 'Data received'}
         except json.JSONDecodeError:
             response_data = {'status': 'error', 'message': 'Invalid JSON'}
         return JsonResponse(response_data)
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+    
+
+@csrf_exempt
+def send_message(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        message = data.get('message', '')
+        response = conversation_manager.get_response(message)
+        return JsonResponse({'response': response})
