@@ -9,7 +9,6 @@ class ConversationManager:
     def __init__(self, api_key, model_name='openai/gpt-4o', api_base='https://openrouter.ai/api/v1', language = "german"):
         print("INIT CONVERSATION MANAGER!")
         self.llm = ChatOpenAI(model_name=model_name, openai_api_key=api_key, openai_api_base=api_base)
-        self.conversation_history = [("system"), "You are a helpful AI-Tutor tha helps students to work on different exercises. Help the student to understand what he has to do, but guide him such that he finds the answer himself and do not give away the solution."]
         self.language = language
         self.context = ""
         self.dialog = ''
